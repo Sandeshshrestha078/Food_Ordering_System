@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:food_admin/screens/features/add_product.dart';
+import 'package:food_admin/screens/features/categorie.dart';
+import 'package:food_admin/screens/features/dashboard.dart';
+import 'package:food_admin/screens/features/delete_product.dart';
+import 'package:food_admin/screens/features/update_product.dart';
 import 'package:food_admin/screens/home_screen.dart';
 
 void main() {
@@ -10,8 +15,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: HomeScreen(),
+    return MaterialApp(
+      home: const HomeScreen(),
+      routes: {
+        DashboardScreen.id: (context) => const DashboardScreen(),
+        AddProductScreen.id: (context) => const AddProductScreen(),
+        UpdateProductScreen.id: (context) => const UpdateProductScreen(),
+        DeleteProductScreen.id: (context) => const DashboardScreen(),
+        CategorieScreen.id: (context) => const CategorieScreen()
+      },
     );
   }
 }
