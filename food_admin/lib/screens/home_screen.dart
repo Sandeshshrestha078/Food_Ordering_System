@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget selectedScreen = const DashboardScreen();
+  Widget selectedScreen = const CategorieScreen();
   chooseScreens(item) {
     switch (item.route) {
       case DashboardScreen.id:
@@ -51,8 +51,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminScaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 232, 234, 235),
         appBar: AppBar(
+          backgroundColor: const Color.fromARGB(255, 57, 74, 83),
           centerTitle: true,
           title: const Text(
             'Admin Panel',
@@ -60,8 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         sideBar: SideBar(
-          textStyle: const TextStyle(
-              color: Color.fromARGB(146, 0, 0, 0), fontSize: 16),
+          borderColor: const Color.fromRGBO(47, 56, 61, 1),
+          backgroundColor: const Color.fromRGBO(47, 56, 61, 1),
+          textStyle: const TextStyle(color: Colors.white, fontSize: 16),
           items: const [
             AdminMenuItem(
               title: 'DASHBOARD',
@@ -69,9 +71,16 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icons.dashboard,
             ),
             AdminMenuItem(
-              title: 'CATEGORIES',
-              route: CategorieScreen.id,
+              title: 'CATEGORY',
               icon: Icons.category,
+              children: [
+                AdminMenuItem(
+                    title: 'ADD CATEGORY',
+                    route: CategorieScreen.id,
+                    icon: Icons.add_a_photo),
+                AdminMenuItem(
+                    title: 'VIEW CATEGORY', icon: Icons.remove_red_eye),
+              ],
             ),
             AdminMenuItem(
               title: 'ADD PRODUCT',
