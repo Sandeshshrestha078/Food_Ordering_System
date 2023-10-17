@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_admin_scaffold/admin_scaffold.dart';
 import 'package:food_admin/screens/features/add_product.dart';
-import 'package:food_admin/screens/features/categorie.dart';
+import 'package:food_admin/screens/features/category/add_categorie.dart';
+import 'package:food_admin/screens/features/category/view_category.dart';
 import 'package:food_admin/screens/features/dashboard.dart';
 import 'package:food_admin/screens/features/delete_product.dart';
 import 'package:food_admin/screens/features/update_product.dart';
@@ -15,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget selectedScreen = const CategorieScreen();
+  Widget selectedScreen = const ViewCategory();
   chooseScreens(item) {
     switch (item.route) {
       case DashboardScreen.id:
@@ -23,9 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedScreen = const DashboardScreen();
         });
         break;
-      case CategorieScreen.id:
+      case AddCategorie.id:
         setState(() {
-          selectedScreen = const CategorieScreen();
+          selectedScreen = const AddCategorie();
+        });
+        break;
+      case ViewCategory.id:
+        setState(() {
+          selectedScreen = const ViewCategory();
         });
         break;
       case AddProductScreen.id:
@@ -76,10 +82,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 AdminMenuItem(
                     title: 'ADD CATEGORY',
-                    route: CategorieScreen.id,
+                    route: AddCategorie.id,
                     icon: Icons.add_a_photo),
                 AdminMenuItem(
-                    title: 'VIEW CATEGORY', icon: Icons.remove_red_eye),
+                    title: 'VIEW CATEGORY',
+                    route: ViewCategory.id,
+                    icon: Icons.remove_red_eye),
               ],
             ),
             AdminMenuItem(

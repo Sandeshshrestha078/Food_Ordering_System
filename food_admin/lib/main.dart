@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_admin/screens/features/add_product.dart';
-import 'package:food_admin/screens/features/categorie.dart';
+import 'package:food_admin/screens/features/category/add_categorie.dart';
+import 'package:food_admin/screens/features/category/view_category.dart';
 import 'package:food_admin/screens/features/dashboard.dart';
 import 'package:food_admin/screens/features/delete_product.dart';
 import 'package:food_admin/screens/features/update_product.dart';
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
         AddProductScreen.id: (context) => const AddProductScreen(),
         UpdateProductScreen.id: (context) => const UpdateProductScreen(),
         DeleteProductScreen.id: (context) => const DashboardScreen(),
-        CategorieScreen.id: (context) => const CategorieScreen()
+        AddCategorie.id: (context) => const AddCategorie(),
+        ViewCategory.id: (context) => const ViewCategory(),
       },
     );
   }
