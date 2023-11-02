@@ -1,12 +1,79 @@
+import 'dart:developer';
+import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:food_admin/constant/values.dart';
 import 'package:food_admin/widget/textfield.dart';
+import 'package:image_picker/image_picker.dart';
 
-class AddCategorie extends StatelessWidget {
+class AddCategorie extends StatefulWidget {
   const AddCategorie({super.key});
   static const String id = "category";
+
+  @override
+  State<AddCategorie> createState() => _AddCategorieState();
+}
+
+class _AddCategorieState extends State<AddCategorie> {
+  File? categoryPic;
+  String imageName = '';
+  Uint8List webImage = Uint8List(8);
+  Future imagePicker() async {
+    if (!kIsWeb) {
+      XFile? selectedimg =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+
+      if (selectedimg != null) {
+        var convertedFile = File(selectedimg.path);
+        setState(() {
+          webImage = null;
+          categoryPic = null;
+        });
+        setState(() {
+          imageName = selectedimg.name;
+          categoryPic = convertedFile;
+        });
+        log('Image selected: $imageName');
+      } else {
+        log('image not selected');
+      }
+    } else if (kIsWeb) {
+      XFile? selectedimg =
+          await ImagePicker().pickImage(source: ImageSource.gallery);
+
+      if (selectedimg != null) {
+        var f = await selectedimg.readAsBytes();
+        // Get the name of the selected image
+        setState(() {
+          imageName = selectedimg.name;
+          webImage = f;
+          categoryPic = File('a');
+        });
+        log('Image selected: $imageName');
+      } else {
+        log('image not selected');
+      }
+    } else {
+      log('Something went wrong');
+    }
+  }
+
+  Future<void> uploadImageToFirebaseStorage(
+      Uint8List imageBytes, String imageName) async {
+    final FirebaseStorage storage = FirebaseStorage.instance;
+    final Reference storageReference = storage.ref().child("images/$imageName");
+
+    try {
+      await storageReference.putData(imageBytes);
+      log('Image uploaded to Firebase Storage');
+    } catch (e) {
+      log('Error uploading image: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -79,26 +146,36 @@ class AddCategorie extends StatelessWidget {
                                   width: 200,
                                   height: 200,
                                   decoration: const BoxDecoration(
-                                      color: Color.fromRGBO(238, 238, 238, 1)),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.photo,
-                                        size: 50,
-                                      ),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      TextButton(
-                                          onPressed: () {},
-                                          child: const Text(
-                                            'Choose an image',
-                                            style: chooseimg,
-                                          ))
-                                    ],
+                                    color: Color.fromRGBO(238, 238, 238, 1),
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: categoryPic == null
+                                              ? const Center(
+                                                  child: Text('no image'),
+                                                )
+                                              : kIsWeb
+                                                  ? Image.memory(webImage,
+                                                      fit: BoxFit.fill)
+                                                  : Image.file(categoryPic!,
+                                                      fit: BoxFit.fill),
+                                        ),
+                                        TextButton(
+                                            onPressed: () {
+                                              imagePicker();
+                                            },
+                                            child: const Text(
+                                              'Choose an image',
+                                              style: chooseimg,
+                                            ))
+                                      ],
+                                    ),
                                   ),
                                 ),
                               )
@@ -114,7 +191,9 @@ class AddCategorie extends StatelessWidget {
                     margin: const EdgeInsets.only(left: 100),
                     child: ElevatedButton(
                       style: buttonStyle,
-                      onPressed: () {},
+                      onPressed: () {
+                        uploadImageToFirebaseStorage(webImage, imageName);
+                      },
                       child: const Text(
                         'Save',
                         style: titleStyle2,
