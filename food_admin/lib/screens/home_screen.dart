@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_admin_scaffold/admin_scaffold.dart';
 import 'package:food_admin/screens/features/add_product.dart';
 import 'package:food_admin/screens/features/category/add_categorie.dart';
-import 'package:food_admin/screens/features/category/view_category.dart';
+// import 'package:food_admin/screens/features/category/view_category.dart';
 import 'package:food_admin/screens/features/dashboard.dart';
 import 'package:food_admin/screens/features/delete_product.dart';
 import 'package:food_admin/screens/features/update_product.dart';
@@ -16,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget selectedScreen = const ViewCategory();
+  Widget selectedScreen = const AddCategorie();
   chooseScreens(item) {
     switch (item.route) {
       case DashboardScreen.id:
@@ -29,11 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedScreen = const AddCategorie();
         });
         break;
-      case ViewCategory.id:
-        setState(() {
-          selectedScreen = const ViewCategory();
-        });
-        break;
+      // case ViewCategory.id:
+      //   setState(() {
+      //     selectedScreen = const ViewCategory();
+      //   });
+      // break;
       case AddProductScreen.id:
         setState(() {
           selectedScreen = const AddProductScreen();
@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.add_a_photo),
                 AdminMenuItem(
                     title: 'VIEW CATEGORY',
-                    route: ViewCategory.id,
+                    // route: ViewCategory.id,
                     icon: Icons.remove_red_eye),
               ],
             ),

@@ -32,6 +32,30 @@
   <title>food_admin</title>
   <link rel="manifest" href="manifest.json">
 
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFLjtxXPZypWWJt9KJ8ST8ZFxkLfUw9GI",
+      authDomain: "food-ordering-system-cb3b7.firebaseapp.com",
+      projectId: "food-ordering-system-cb3b7",
+      storageBucket: "food-ordering-system-cb3b7.appspot.com",
+      messagingSenderId: "453053012589",
+      appId: "1:453053012589:web:dad07bcbfd3e8f8585fd64",
+      measurementId: "G-38WBG3V93S"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+
   <script>
     // The value below is injected by flutter build, do not touch.
     var serviceWorkerVersion = null;
