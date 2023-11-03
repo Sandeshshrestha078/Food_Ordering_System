@@ -4,11 +4,13 @@ class CommonTextFormField extends StatefulWidget {
   // final TextEditingController controller;
   final String label;
   final bool tohide;
+  final String msg;
   const CommonTextFormField({
     Key? key,
     // required this.controller,
     required this.label,
     required this.tohide,
+    required this.msg,
   }) : super(key: key);
 
   @override
@@ -33,6 +35,12 @@ class _CommonTextFormFieldState extends State<CommonTextFormField> {
           borderSide: const BorderSide(color: Colors.black),
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return widget.msg;
+        }
+        return null;
+      },
     );
   }
 }

@@ -21,24 +21,31 @@ class _AddCategorieState extends State<AddCategorie> {
   File? categoryPic;
   String imageName = '';
   Uint8List webImage = Uint8List(8);
+  bool isImageSelected = false;
   Future imagePicker() async {
+    final BuildContext context = this.context;
     if (!kIsWeb) {
       XFile? selectedimg =
           await ImagePicker().pickImage(source: ImageSource.gallery);
 
       if (selectedimg != null) {
         var convertedFile = File(selectedimg.path);
-        setState(() {
-          webImage = null;
-          categoryPic = null;
-        });
+
         setState(() {
           imageName = selectedimg.name;
           categoryPic = convertedFile;
         });
         log('Image selected: $imageName');
       } else {
-        log('image not selected');
+        // Handle case where no image is selected.
+        isImageSelected = false;
+        // Display an error message in the UI or show a snackbar.
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image not selected'),
+          ),
+        );
       }
     } else if (kIsWeb) {
       XFile? selectedimg =
@@ -54,7 +61,7 @@ class _AddCategorieState extends State<AddCategorie> {
         });
         log('Image selected: $imageName');
       } else {
-        log('image not selected');
+        return ('image not selected');
       }
     } else {
       log('Something went wrong');
@@ -124,7 +131,10 @@ class _AddCategorieState extends State<AddCategorie> {
                           ),
                           const SizedBox(height: 10),
                           const CommonTextFormField(
-                              label: 'Title', tohide: false),
+                            label: 'Title',
+                            tohide: false,
+                            msg: 'Product Name Required',
+                          ),
                           const SizedBox(height: 25),
 
                           //choose image field
@@ -192,7 +202,20 @@ class _AddCategorieState extends State<AddCategorie> {
                     child: ElevatedButton(
                       style: buttonStyle,
                       onPressed: () {
-                        uploadImageToFirebaseStorage(webImage, imageName);
+                        if (isImageSelected) {
+                          uploadImageToFirebaseStorage(webImage, imageName);
+                          setState(() {
+                            webImage = Uint8List(8); // Reset the webImage.
+                          });
+                        } else {
+                          // Display an error message in the UI or show a snackbar.
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('Please select an image before saving.'),
+                            ),
+                          );
+                        }
                       },
                       child: const Text(
                         'Save',
