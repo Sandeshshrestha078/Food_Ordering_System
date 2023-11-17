@@ -94,7 +94,8 @@ class _AddCategorieState extends State<AddCategorie> {
           await saveCategoryToFirebase(downloadUrl);
           // Show a Snackbar with a success message.
           _showSnackBar('Image uploaded successfully');
-
+          // Reset the text field.
+          categoryTitleController.clear();
           // Clear the picked image.
           setState(() {
             _pickedImage = null;
