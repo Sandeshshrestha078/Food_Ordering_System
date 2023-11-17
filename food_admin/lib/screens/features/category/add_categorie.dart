@@ -1,5 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -18,24 +20,25 @@ class AddCategorie extends StatefulWidget {
 }
 
 class _AddCategorieState extends State<AddCategorie> {
-  File? categoryPic;
-  String imageName = '';
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController categoryTitleController = TextEditingController();
+  File? _pickedImage;
   Uint8List webImage = Uint8List(8);
   bool isImageSelected = false;
-  Future imagePicker() async {
-    final BuildContext context = this.context;
+  String imageName = '';
+
+// function to pick image from gallery
+  Future<void> _pickImage() async {
     if (!kIsWeb) {
-      XFile? selectedimg =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
-
-      if (selectedimg != null) {
-        var convertedFile = File(selectedimg.path);
-
+      final ImagePicker picker = ImagePicker();
+      XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        var selected = File(image.path);
         setState(() {
-          imageName = selectedimg.name;
-          categoryPic = convertedFile;
+          imageName = image.name;
+          isImageSelected = true;
+          _pickedImage = selected;
         });
-        log('Image selected: $imageName');
       } else {
         // Handle case where no image is selected.
         isImageSelected = false;
@@ -48,36 +51,88 @@ class _AddCategorieState extends State<AddCategorie> {
         );
       }
     } else if (kIsWeb) {
-      XFile? selectedimg =
-          await ImagePicker().pickImage(source: ImageSource.gallery);
-
-      if (selectedimg != null) {
-        var f = await selectedimg.readAsBytes();
-        // Get the name of the selected image
+      final ImagePicker picker = ImagePicker();
+      XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        var f = await image.readAsBytes();
         setState(() {
-          imageName = selectedimg.name;
+          imageName = image.name;
+          isImageSelected = true;
           webImage = f;
-          categoryPic = File('a');
+          _pickedImage = File('a');
         });
-        log('Image selected: $imageName');
       } else {
-        return ('image not selected');
+        log('No image has been picked');
       }
     } else {
-      log('Something went wrong');
+      log('something went wrong');
     }
   }
 
-  Future<void> uploadImageToFirebaseStorage(
-      Uint8List imageBytes, String imageName) async {
-    final FirebaseStorage storage = FirebaseStorage.instance;
-    final Reference storageReference = storage.ref().child("images/$imageName");
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
 
+  Future<void> _saveImageToFirebaseStorage() async {
+    if (webImage.isNotEmpty) {
+      final Reference storageReference =
+          FirebaseStorage.instance.ref().child('category_images/$imageName');
+
+      try {
+        UploadTask uploadTask = storageReference.putData(webImage);
+        TaskSnapshot storageTaskSnapshot = await uploadTask;
+
+        if (storageTaskSnapshot.state == TaskState.success) {
+          // Image has been successfully uploaded to Firebase Storage.
+          String downloadUrl = await storageReference.getDownloadURL();
+          log('Image uploaded to Firebase Storage. Download URL: $downloadUrl');
+          // Now, save the category title along with the download URL to Firebase.
+          await saveCategoryToFirebase(downloadUrl);
+          // Show a Snackbar with a success message.
+          _showSnackBar('Image uploaded successfully');
+
+          // Clear the picked image.
+          setState(() {
+            _pickedImage = null;
+          });
+        } else {
+          log('Failed to upload image to Firebase Storage.');
+        }
+      } catch (e) {
+        log('Error uploading image to Firebase Storage: $e');
+
+        // Show a Snackbar with an error message.
+        _showSnackBar('Failed to upload image');
+      }
+    } else {
+      log('No image to upload.');
+
+      // Show a Snackbar with a message.
+      _showSnackBar('No image to upload');
+    }
+  }
+
+// Function to save the category details to Firebase.
+  Future<void> saveCategoryToFirebase(String imageUrl) async {
     try {
-      await storageReference.putData(imageBytes);
-      log('Image uploaded to Firebase Storage');
+      // Get the category title from the text field.
+      String categoryTitle = categoryTitleController.text.trim();
+
+      // Save the category details to Firestore.
+      await FirebaseFirestore.instance.collection('categories').add({
+        'title': categoryTitle,
+        'image_url': imageUrl,
+      });
+
+      // For demonstration purposes, log the category details.
+      log('Category Title: $categoryTitle');
+      log('Image URL: $imageUrl');
     } catch (e) {
-      log('Error uploading image: $e');
+      log('Error saving category to Firestore: $e');
     }
   }
 
@@ -121,77 +176,83 @@ class _AddCategorieState extends State<AddCategorie> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         vertical: 20.0, horizontal: 15.0),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Category Title',
-                            style: titleStyle2,
-                          ),
-                          const SizedBox(height: 10),
-                          const CommonTextFormField(
-                            label: 'Title',
-                            tohide: false,
-                            msg: 'Product Name Required',
-                          ),
-                          const SizedBox(height: 25),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Category Title',
+                              style: titleStyle2,
+                            ),
+                            const SizedBox(height: 10),
+                            CommonTextFormField(
+                              controller: categoryTitleController,
+                              label: 'Title',
+                              tohide: false,
+                              msg: 'Product Name Required',
+                            ),
+                            const SizedBox(height: 25),
 
-                          //choose image field
-                          Row(
-                            children: [
-                              const Text(
-                                'Category Image',
-                                style: titleStyle2,
-                              ),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              DottedBorder(
-                                dashPattern: const [8, 4, 8, 4],
-                                borderType: BorderType.RRect,
-                                radius: const Radius.circular(12),
-                                padding: const EdgeInsets.all(6),
-                                child: Container(
-                                  width: 200,
-                                  height: 200,
-                                  decoration: const BoxDecoration(
-                                    color: Color.fromRGBO(238, 238, 238, 1),
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Expanded(
-                                          child: categoryPic == null
-                                              ? const Center(
-                                                  child: Text('no image'),
-                                                )
-                                              : kIsWeb
-                                                  ? Image.memory(webImage,
-                                                      fit: BoxFit.fill)
-                                                  : Image.file(categoryPic!,
-                                                      fit: BoxFit.fill),
-                                        ),
-                                        TextButton(
-                                            onPressed: () {
-                                              imagePicker();
-                                            },
-                                            child: const Text(
-                                              'Choose an image',
-                                              style: chooseimg,
-                                            ))
-                                      ],
+                            //choose image field
+                            Row(
+                              children: [
+                                const Text(
+                                  'Category Image',
+                                  style: titleStyle2,
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                DottedBorder(
+                                  dashPattern: const [8, 4, 8, 4],
+                                  borderType: BorderType.RRect,
+                                  radius: const Radius.circular(12),
+                                  padding: const EdgeInsets.all(6),
+                                  child: Container(
+                                    width: 200,
+                                    height: 200,
+                                    decoration: const BoxDecoration(
+                                      color: Color.fromRGBO(238, 238, 238, 1),
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: _pickedImage == null
+                                                ? const Center(
+                                                    child: Text('No image'),
+                                                  )
+                                                : kIsWeb
+                                                    ? Image.memory(
+                                                        webImage,
+                                                        fit: BoxFit.fill,
+                                                      )
+                                                    : Image.file(
+                                                        _pickedImage!,
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                          ),
+                                          TextButton(
+                                              onPressed: ((() => _pickImage())),
+                                              child: const Text(
+                                                'Choose an image',
+                                                style: chooseimg,
+                                              ))
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              )
-                            ],
-                          )
-                        ]),
+                                )
+                              ],
+                            )
+                          ]),
+                    ),
                   ),
                   const SizedBox(
                     height: 20,
@@ -202,19 +263,20 @@ class _AddCategorieState extends State<AddCategorie> {
                     child: ElevatedButton(
                       style: buttonStyle,
                       onPressed: () {
-                        if (isImageSelected) {
-                          uploadImageToFirebaseStorage(webImage, imageName);
-                          setState(() {
-                            webImage = Uint8List(8); // Reset the webImage.
-                          });
-                        } else {
-                          // Display an error message in the UI or show a snackbar.
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Please select an image before saving.'),
-                            ),
-                          );
+                        // Call the function to save the image to Firebase Storage when the button is pressed.
+                        if (_formKey.currentState!.validate()) {
+                          if (isImageSelected) {
+                            _saveImageToFirebaseStorage();
+                          } else {
+                            // Display an error message in the UI or show a snackbar.
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                backgroundColor: Colors.red,
+                                content: Text(
+                                    'Please select an image before saving.'),
+                              ),
+                            );
+                          }
                         }
                       },
                       child: const Text(
