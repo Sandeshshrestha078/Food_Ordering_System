@@ -1,10 +1,16 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:food_admin/constant/values.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../models/product_model.dart';
 import '../../widget/textfield.dart';
+import 'package:uuid/uuid.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -19,6 +25,100 @@ class _AddProductScreenState extends State<AddProductScreen> {
   TextEditingController productTitleController = TextEditingController();
   TextEditingController productDetailController = TextEditingController();
   TextEditingController productPriceController = TextEditingController();
+  bool isPopular = false;
+  bool isFavourite = false;
+  File? _pickedImage;
+  Uint8List webImage = Uint8List(8);
+  bool isImageSelected = false;
+  String imageName = '';
+  List<String> imageUrl = [];
+  var uuid = const Uuid();
+
+// function to pick image from gallery
+  Future<void> _pickImage() async {
+    if (!kIsWeb) {
+      final ImagePicker picker = ImagePicker();
+      XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        var selected = File(image.path);
+        setState(() {
+          imageName = image.name;
+          isImageSelected = true;
+          _pickedImage = selected;
+        });
+      } else {
+        // Handle case where no image is selected.
+        isImageSelected = false;
+        // Display an error message in the UI or show a snackbar.
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image not selected'),
+          ),
+        );
+      }
+    } else if (kIsWeb) {
+      final ImagePicker picker = ImagePicker();
+      XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        var f = await image.readAsBytes();
+        setState(() {
+          imageName = image.name;
+          isImageSelected = true;
+          webImage = f;
+          _pickedImage = File('a');
+        });
+      } else {
+        log('No image has been picked');
+      }
+    } else {
+      log('something went wrong');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
+  Future<void> _saveImageToFirebaseStorage() async {
+    if (webImage.isNotEmpty) {
+      final Reference storageReference =
+          FirebaseStorage.instance.ref().child('product_image/$imageName');
+
+      try {
+        UploadTask uploadTask = storageReference.putData(webImage);
+        TaskSnapshot storageTaskSnapshot = await uploadTask;
+
+        if (storageTaskSnapshot.state == TaskState.success) {
+          // Image has been successfully uploaded to Firebase Storage.
+          String downloadUrl = await storageReference.getDownloadURL();
+          log('Image uploaded to Firebase Storage. Download URL: $downloadUrl');
+          // Show a Snackbar with a success message.
+
+          // Clear the picked image.
+          setState(() {
+            imageUrl.add(downloadUrl);
+          });
+        } else {
+          log('Failed to upload image to Firebase Storage.');
+        }
+      } catch (e) {
+        log('Error uploading image to Firebase Storage: $e');
+
+        // Show a Snackbar with an error message.
+        _showSnackBar('Failed to upload image');
+      }
+    } else {
+      log('No image to upload.');
+
+      // Show a Snackbar with a message.
+      _showSnackBar('No image to upload');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,41 +217,72 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.center,
                                           children: [
+                                            Expanded(
+                                              child: _pickedImage == null
+                                                  ? const Center(
+                                                      child: Text('No image'),
+                                                    )
+                                                  : kIsWeb
+                                                      ? Image.memory(
+                                                          webImage,
+                                                          fit: BoxFit.fill,
+                                                        )
+                                                      : Image.file(
+                                                          _pickedImage!,
+                                                          fit: BoxFit.fill,
+                                                        ),
+                                            ),
                                             TextButton(
-                                                onPressed: () {},
-                                                child: const Text(
-                                                  'Choose an image',
-                                                  style: chooseimg,
-                                                ))
+                                              onPressed: ((() => _pickImage())),
+                                              child: const Text(
+                                                'Choose an image',
+                                                style: chooseimg,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
                                     ),
                                   )
                                 ],
-                              )
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              SwitchListTile(
+                                  title: const Text(
+                                    "Is this Product Popular?",
+                                    style: titleStyle2,
+                                  ),
+                                  value: isPopular,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      isPopular = !isPopular;
+                                    });
+                                  }),
                             ]),
                       ),
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
 
                     Container(
-                      margin: const EdgeInsets.only(left: 100),
+                      margin:
+                          const EdgeInsets.only(top: 10, left: 80, bottom: 40),
                       child: ElevatedButton(
                         style: buttonStyle,
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            log('ready to save');
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text(
-                                    'Please select an image before saving.'),
-                              ),
-                            );
+                            if (isImageSelected) {
+                              save();
+                            } else {
+                              // Display an error message in the UI or show a snackbar.
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  backgroundColor: Colors.red,
+                                  content: Text(
+                                      'Please select an image before saving.'),
+                                ),
+                              );
+                            }
                           }
                         },
                         child: const Text(
@@ -168,5 +299,32 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
       ),
     );
+  }
+
+  save() async {
+    await _saveImageToFirebaseStorage();
+    Products products = Products(
+      id: uuid.v4(),
+      productName: productTitleController.text,
+      detail: productDetailController.text,
+      price: int.parse(productPriceController.text),
+      imageUrls: imageUrl,
+      isPopular: isPopular,
+      isFavourite: isFavourite,
+    );
+
+    await products.addProducts(products).whenComplete(() {
+      setState(() {
+        _showSnackBar('ADDED SUCCESSFULLY');
+        productTitleController.clear();
+        productDetailController.clear();
+        productPriceController.clear();
+        isPopular = false;
+        _pickedImage = null;
+        isImageSelected = false;
+        imageName = '';
+        imageUrl = [];
+      });
+    });
   }
 }
