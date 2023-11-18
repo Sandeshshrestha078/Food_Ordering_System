@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
 class CommonTextFormField extends StatefulWidget {
@@ -5,12 +6,15 @@ class CommonTextFormField extends StatefulWidget {
   final String label;
   final bool tohide;
   final String msg;
+  final int? maxLines;
+  final TextEditingController controller;
   const CommonTextFormField({
     Key? key,
-    // required this.controller,
     required this.label,
     required this.tohide,
     required this.msg,
+    this.maxLines,
+    required this.controller,
   }) : super(key: key);
 
   @override
@@ -22,7 +26,8 @@ class _CommonTextFormFieldState extends State<CommonTextFormField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      // controller: widget.controller,
+      maxLines: widget.maxLines == 1 ? 1 : widget.maxLines,
+      controller: widget.controller,
       obscureText: widget.tohide,
       decoration: InputDecoration(
         hintText: widget.label,

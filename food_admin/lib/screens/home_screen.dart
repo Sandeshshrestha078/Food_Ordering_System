@@ -7,6 +7,8 @@ import 'package:food_admin/screens/features/dashboard.dart';
 import 'package:food_admin/screens/features/delete_product.dart';
 import 'package:food_admin/screens/features/update_product.dart';
 
+import 'features/category/view_category.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
   static const String id = 'home';
@@ -16,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget selectedScreen = const AddCategorie();
+  Widget selectedScreen = const AddProductScreen();
   chooseScreens(item) {
     switch (item.route) {
       case DashboardScreen.id:
@@ -86,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.add_a_photo),
                 AdminMenuItem(
                     title: 'VIEW CATEGORY',
-                    // route: ViewCategory.id,
+                    route: ViewCategory.id,
                     icon: Icons.remove_red_eye),
               ],
             ),

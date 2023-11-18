@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:food_admin/screens/features/add_product.dart';
 import 'package:food_admin/screens/features/category/add_categorie.dart';
+import 'package:food_admin/screens/features/category/view_category.dart';
 // import 'package:food_admin/screens/features/category/view_category.dart';
 import 'package:food_admin/screens/features/dashboard.dart';
 import 'package:food_admin/screens/features/delete_product.dart';
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         UpdateProductScreen.id: (context) => const UpdateProductScreen(),
         DeleteProductScreen.id: (context) => const DashboardScreen(),
         AddCategorie.id: (context) => const AddCategorie(),
-        // ViewCategory.id: (context) => const ViewCategory(),
+        ViewCategory.id: (context) => const ViewCategory(),
       },
     );
   }
