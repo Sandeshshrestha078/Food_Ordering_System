@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Products {
-  // String? category;
+  String? category;
   String? id;
   String? productName;
   String? detail;
@@ -11,7 +11,7 @@ class Products {
   bool? isFavourite;
 
   Products({
-    // required this.category,
+    required this.category,
     required this.id,
     required this.productName,
     required this.detail,
@@ -25,7 +25,7 @@ class Products {
     CollectionReference db = FirebaseFirestore.instance.collection("products");
 
     Map<String, dynamic> data = {
-      // "category": products.category,
+      "category": products.category,
       "id": products.id,
       "productName": products.productName,
       "detail": products.detail,
@@ -34,14 +34,14 @@ class Products {
       "isPopular": products.isPopular,
       "isFavourite": products.isFavourite,
     };
-    await db.add(data);
+    await db.doc(products.productName).set(data);
   }
 
   static Future<void> updateProducts(String id, Products updateProducts) async {
     CollectionReference db = FirebaseFirestore.instance.collection("products");
 
     Map<String, dynamic> data = {
-      // "category": updateProducts.category,
+      "category": updateProducts.category,
       "productName": updateProducts.productName,
       "id": updateProducts.id,
       "detail": updateProducts.detail,
