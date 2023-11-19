@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:food_admin/constant/values.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 import '../../widget/textfield.dart';
 import 'package:uuid/uuid.dart';
@@ -25,6 +26,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   TextEditingController productTitleController = TextEditingController();
   TextEditingController productDetailController = TextEditingController();
   TextEditingController productPriceController = TextEditingController();
+  CategoryService categoryService = CategoryService();
+
   bool isPopular = false;
   bool isFavourite = false;
   File? _pickedImage;
@@ -33,6 +36,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
   String imageName = '';
   List<String> imageUrl = [];
   var uuid = const Uuid();
+  String? selectedCategory;
+  List<String> categories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Call getCategories to populate the categories list
+    categoryService.getCategories().then((result) {
+      setState(() {
+        categories = result;
+        print('Categories: $categories');
+        print('Selected Category: $selectedCategory');
+      });
+    });
+  }
 
 // function to pick image from gallery
   Future<void> _pickImage() async {
@@ -166,6 +184,40 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              DropdownButtonFormField(
+                                  hint: const Text(
+                                    'Choose Category',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                  decoration: InputDecoration(
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.blueGrey)),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide:
+                                          const BorderSide(color: Colors.black),
+                                    ),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null) {
+                                      return "Category must be selected";
+                                    }
+                                    return null;
+                                  },
+                                  value: selectedCategory,
+                                  items: categories
+                                      .map((e) => DropdownMenuItem<String>(
+                                          value: e, child: Text(e)))
+                                      .toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedCategory = value.toString();
+                                    });
+                                  }),
+                              const SizedBox(height: 25),
+
                               CommonTextFormField(
                                 controller: productTitleController,
                                 label: 'Product Name',
@@ -304,6 +356,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   save() async {
     await _saveImageToFirebaseStorage();
     Products products = Products(
+      category: selectedCategory,
       id: uuid.v4(),
       productName: productTitleController.text,
       detail: productDetailController.text,
@@ -323,7 +376,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         _pickedImage = null;
         isImageSelected = false;
         imageName = '';
-        imageUrl = [];
+        imageUrl.clear();
+        selectedCategory = null;
       });
     });
   }
