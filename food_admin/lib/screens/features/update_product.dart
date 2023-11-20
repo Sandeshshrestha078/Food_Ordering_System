@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_admin/models/product_model.dart';
+import 'package:food_admin/screens/features/update_complete_screen.dart';
 
 import '../../constant/values.dart';
 
@@ -17,6 +18,7 @@ class UpdateProductScreen extends StatefulWidget {
 class _UpdateProductScreenState extends State<UpdateProductScreen> {
   final CollectionReference myCollection =
       FirebaseFirestore.instance.collection('products');
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -107,7 +109,22 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     IconButton(
                       icon: const Icon(Icons.edit),
                       onPressed: () {
-                        print('Update button pressed');
+                        Navigator.push(context, MaterialPageRoute(builder: (_) {
+                          return UpdateCompleteScreen(
+                            id: data['id'],
+                            products: Products(
+                              category: data['category'],
+                              id: data['id'],
+                              productName: data['productName'],
+                              detail: data[
+                                  'detail'], // Add other fields accordingly
+                              price: data['price'],
+                              imageUrls: data['imageUrls'],
+                              isPopular: data['isPopular'],
+                              isFavourite: data['isFavourite'],
+                            ),
+                          );
+                        }));
                       },
                     ),
                     IconButton(
