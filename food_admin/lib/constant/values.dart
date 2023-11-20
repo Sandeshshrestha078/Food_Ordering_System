@@ -22,3 +22,9 @@ const categorieStyle = BoxDecoration(
 final buttonStyle = ElevatedButton.styleFrom(
     backgroundColor: const Color.fromRGBO(26, 112, 223, 1),
     minimumSize: const Size(120, 40));
+
+//upate page title style
+const updatestyle =
+    TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.indigo);
+
+const updateRowStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w300);
