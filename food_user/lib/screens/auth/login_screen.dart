@@ -1,7 +1,12 @@
 // import 'dart:html';
 
+import 'dart:developer';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:food_user/screens/signup_screen.dart';
+import 'package:food_user/screens/auth/signup_screen.dart';
+import 'package:food_user/screens/home_screen.dart';
+import 'package:food_user/widget/textfield.dart';
 
 // import '../../dashpage/home_screen.dart';
 // import '../forget_password/forget_pwd_optn/forget_pwd_buttom_sheet.dart';
@@ -14,6 +19,38 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  // Function to handle the login process
+  void login(BuildContext context) async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      if (userCredential.user != null) {
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const HomeScreeen()));
+      }
+
+      // Handle successful login
+      log('User logged in: ${userCredential.user?.uid}');
+    } on FirebaseAuthException catch (e) {
+      // Handle login error
+      log('Login error: ${e.code.toString()}');
+      //  Display an error message to the user
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: ${e.code.toString()}')));
+    } catch (e) {
+      // Handle other exceptions
+      log('Error occurred during login: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -42,37 +79,31 @@ class _SignInState extends State<SignIn> {
 
             /*-- section 2 [form] start */
             Form(
+              key: _formKey,
               child: Container(
                 padding: const EdgeInsets.only(top: 20),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(
-                            Icons.person_outline_outlined,
-                          ),
-                          labelText: 'E-Mail',
-                          labelStyle: TextStyle(),
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.red),
-                          ),
+                      CommonTextFormField(
+                        controller: emailController,
+                        tohide: false,
+                        msg: 'Enter your email',
+                        label: 'E-mail',
+                        prefixIcon: const Icon(
+                          Icons.person_outline_outlined,
                         ),
                       ),
                       const SizedBox(
                         height: 10.0,
                       ),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(
-                            Icons.fingerprint_outlined,
-                          ),
-                          suffixIcon: Icon(Icons.remove_red_eye_outlined),
-                          labelText: 'Password',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.red)),
+                      CommonTextFormField(
+                        controller: passwordController,
+                        tohide: true,
+                        msg: 'Enter your password',
+                        label: 'Password',
+                        prefixIcon: const Icon(
+                          Icons.fingerprint_outlined,
                         ),
                       ),
                       Align(
@@ -91,7 +122,12 @@ class _SignInState extends State<SignIn> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                // If the form is valid, call createAccount
+                                login(context);
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.all(16),
                                 backgroundColor: Colors.red,
@@ -110,26 +146,6 @@ class _SignInState extends State<SignIn> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'OR',
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Image(
-                          image: AssetImage('assets/images/googlelogo.png'),
-                          width: 20.0,
-                        ),
-                        label: const Text('Sign-in with google'),
-                        style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.all(16),
-                            side: const BorderSide(color: Colors.black))),
-                  ),
                   const SizedBox(
                     height: 10,
                   ),
