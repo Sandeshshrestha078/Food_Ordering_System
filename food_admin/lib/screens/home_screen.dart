@@ -18,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget selectedScreen = const AddProductScreen();
+  Widget selectedScreen = const UpdateProductScreen();
   chooseScreens(item) {
     switch (item.route) {
       case DashboardScreen.id:
@@ -46,11 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedScreen = const UpdateProductScreen();
         });
         break;
-      case DeleteProductScreen.id:
-        setState(() {
-          selectedScreen = const DeleteProductScreen();
-        });
-        break;
 
       default:
     }
@@ -65,7 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
           centerTitle: true,
           title: const Text(
             'Admin Panel',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            style: TextStyle(
+                fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
           ),
         ),
         sideBar: SideBar(
@@ -83,13 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icons.category,
               children: [
                 AdminMenuItem(
-                    title: 'ADD CATEGORY',
-                    route: AddCategorie.id,
-                    icon: Icons.add_a_photo),
+                  title: 'ADD CATEGORY',
+                  route: AddCategorie.id,
+                ),
                 AdminMenuItem(
-                    title: 'VIEW CATEGORY',
-                    route: ViewCategory.id,
-                    icon: Icons.remove_red_eye),
+                  title: 'VIEW CATEGORY',
+                  route: ViewCategory.id,
+                ),
               ],
             ),
             AdminMenuItem(
@@ -101,11 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
               title: 'UPDATE PRODUCT',
               route: UpdateProductScreen.id,
               icon: Icons.update,
-            ),
-            AdminMenuItem(
-              title: 'DELETE PRODUCT',
-              route: DeleteProductScreen.id,
-              icon: Icons.delete,
             ),
           ],
           selectedRoute: HomeScreen.id,

@@ -6,7 +6,7 @@ class Products {
   String? productName;
   String? detail;
   int? price;
-  List<String>? imageUrls;
+  List<dynamic>? imageUrls;
   bool? isPopular;
   bool? isFavourite;
 

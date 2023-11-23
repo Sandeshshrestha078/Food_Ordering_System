@@ -46,8 +46,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     categoryService.getCategories().then((result) {
       setState(() {
         categories = result;
-        print('Categories: $categories');
-        print('Selected Category: $selectedCategory');
       });
     });
   }
@@ -339,7 +337,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         },
                         child: const Text(
                           'Save',
-                          style: titleStyle2,
+                          style: titleStyle,
                         ),
                       ),
                     )

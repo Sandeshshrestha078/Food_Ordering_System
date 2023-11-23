@@ -7,7 +7,8 @@ const titleStyle = TextStyle(
   fontSize: 18,
   fontWeight: FontWeight.w200,
 );
-const titleStyle2 = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+const titleStyle2 =
+    TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black);
 const chooseimg = TextStyle(fontSize: 14, color: Colors.blue);
 
 const categoryPadding = EdgeInsets.symmetric(vertical: 20.0, horizontal: 15.0);

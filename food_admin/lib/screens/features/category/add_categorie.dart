@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:food_admin/constant/values.dart';
 import 'package:food_admin/widget/textfield.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 class AddCategorie extends StatefulWidget {
   const AddCategorie({super.key});
@@ -26,6 +27,7 @@ class _AddCategorieState extends State<AddCategorie> {
   Uint8List webImage = Uint8List(8);
   bool isImageSelected = false;
   String imageName = '';
+  final Uuid uuid = const Uuid();
 
 // function to pick image from gallery
   Future<void> _pickImage() async {
@@ -123,15 +125,22 @@ class _AddCategorieState extends State<AddCategorie> {
       // Get the category title from the text field.
       String categoryTitle = categoryTitleController.text.trim();
 
-      // Save the category details to Firestore.
-      await FirebaseFirestore.instance.collection('categories').add({
+      String categoryId = uuid.v4();
+
+      // Get a reference to the 'categories' collection.
+      CollectionReference categoriesCollection =
+          FirebaseFirestore.instance.collection('categories');
+
+      // Use the generated ID for the new document.
+      await categoriesCollection.doc(categoryId).set({
+        'catrgotyId': categoryId,
         'title': categoryTitle,
         'image_url': imageUrl,
       });
-
       // For demonstration purposes, log the category details.
       log('Category Title: $categoryTitle');
       log('Image URL: $imageUrl');
+      log('Document ID: $categoryId');
     } catch (e) {
       log('Error saving category to Firestore: $e');
     }
@@ -282,7 +291,7 @@ class _AddCategorieState extends State<AddCategorie> {
                       },
                       child: const Text(
                         'Save',
-                        style: titleStyle2,
+                        style: titleStyle,
                       ),
                     ),
                   )
